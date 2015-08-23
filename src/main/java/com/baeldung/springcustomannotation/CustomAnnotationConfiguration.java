@@ -9,9 +9,9 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan("com.baeldung.springcustomannotation")
 public class CustomAnnotationConfiguration {
 
-	private static final Logger logger = LoggerFactory.getLogger(CustomAnnotationConfiguration.class);
+    private static final Logger logger = LoggerFactory.getLogger(CustomAnnotationConfiguration.class);
 
-	public CustomAnnotationConfiguration() {
-		logger.info(">>> CustomAnnotationConfiguration is created.");
-	}
+    public CustomAnnotationConfiguration() {
+        logger.info(">>> CustomAnnotationConfiguration is created.");
+    }
 }
