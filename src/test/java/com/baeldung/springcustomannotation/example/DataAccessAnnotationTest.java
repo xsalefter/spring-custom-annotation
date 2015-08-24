@@ -24,21 +24,21 @@ public class DataAccessAnnotationTest {
     private GenericDAO<Person> anotherPersonGenericDAO;
 
     @Test
-    public void testThatGenericDAOsIsNotNull() {
+    public void whenGenericDAOInitialized_thenMakeSureThatNotNull() {
         assertThat(personGenericDAO, is(notNullValue()));
         assertThat(accountGenericDAO, is(notNullValue()));
     }
 
     @Test
-    public void testThatGenericDAOIsSingleton() {
-        assertThat(this.personGenericDAO, not(sameInstance(this.accountGenericDAO)));
-        assertThat(this.personGenericDAO, not(equalTo(this.accountGenericDAO)));
+    public void whenGenericDAOInjected_thenMakeSureThatItIsSingleton() {
+        assertThat(personGenericDAO, not(sameInstance(accountGenericDAO)));
+        assertThat(personGenericDAO, not(equalTo(accountGenericDAO)));
 
-        assertThat(this.personGenericDAO, sameInstance(this.anotherPersonGenericDAO));
+        assertThat(personGenericDAO, sameInstance(anotherPersonGenericDAO));
     }
 
     @Test
-    public void testThatFindAllReturnExpectedResult() {
+    public void whenFindAll_thenMakeSureThatMessagesIsCorrect() {
         personGenericDAO.findAll();
         assertThat(personGenericDAO.getMessage(), is("Would create findAll query from Person"));
 
@@ -47,7 +47,7 @@ public class DataAccessAnnotationTest {
     }
 
     @Test
-    public void testThatPersistMethodReturnExpectedResult() {
+    public void whenPersist_thenMakeSureThatMessagesIsCorrect() {
         personGenericDAO.persist(new Person());
         assertThat(personGenericDAO.getMessage(), is("Would create persist query from Person"));
 
