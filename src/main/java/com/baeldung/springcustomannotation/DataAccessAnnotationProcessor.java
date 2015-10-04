@@ -32,10 +32,6 @@ public class DataAccessAnnotationProcessor implements BeanPostProcessor {
     }
 
     protected void scanDataAccessAnnotation(Object bean, String beanName) {
-        this.configureFieldInjection(bean);
-    }
-
-    private void configureFieldInjection(Object bean) {
         Class<?> managedBeanClass = bean.getClass();
         FieldCallback fieldCallback = new DataAccessFieldCallback(configurableListableBeanFactory, bean);
         ReflectionUtils.doWithFields(managedBeanClass, fieldCallback);
