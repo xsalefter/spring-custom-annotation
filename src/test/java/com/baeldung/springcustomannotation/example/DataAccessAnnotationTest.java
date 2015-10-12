@@ -24,13 +24,13 @@ public class DataAccessAnnotationTest {
     private GenericDAO<Person> anotherPersonGenericDAO;
 
     @Test
-    public void whenGenericDAOInitialized_thenMakeSureThatNotNull() {
+    public void whenGenericDAOInitialized_thenNotNull() {
         assertThat(personGenericDAO, is(notNullValue()));
         assertThat(accountGenericDAO, is(notNullValue()));
     }
 
     @Test
-    public void whenGenericDAOInjected_thenMakeSureThatItIsSingleton() {
+    public void whenGenericDAOInjected_thenItIsSingleton() {
         assertThat(personGenericDAO, not(sameInstance(accountGenericDAO)));
         assertThat(personGenericDAO, not(equalTo(accountGenericDAO)));
 
@@ -38,7 +38,7 @@ public class DataAccessAnnotationTest {
     }
 
     @Test
-    public void whenFindAll_thenMakeSureThatMessagesIsCorrect() {
+    public void whenFindAll_thenMessagesIsCorrect() {
         personGenericDAO.findAll();
         assertThat(personGenericDAO.getMessage(), is("Would create findAll query from Person"));
 

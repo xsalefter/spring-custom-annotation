@@ -14,14 +14,14 @@ public class DataAccessAnnotationProcessor implements BeanPostProcessor {
     private ConfigurableListableBeanFactory configurableListableBeanFactory;
 
     @Autowired
-    public DataAccessAnnotationProcessor(ConfigurableListableBeanFactory beanFactory) {
-        this.configurableListableBeanFactory = beanFactory;
+    public DataAccessAnnotationProcessor(ConfigurableListableBeanFactory bf) {
+        configurableListableBeanFactory = bf;
     }
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) 
     throws BeansException {
-        this.scanDataAccessAnnotation(bean, beanName);
+        scanDataAccessAnnotation(bean, beanName);
         return bean;
     }
 
@@ -33,7 +33,7 @@ public class DataAccessAnnotationProcessor implements BeanPostProcessor {
 
     protected void scanDataAccessAnnotation(Object bean, String beanName) {
         Class<?> managedBeanClass = bean.getClass();
-        FieldCallback fieldCallback = new DataAccessFieldCallback(configurableListableBeanFactory, bean);
-        ReflectionUtils.doWithFields(managedBeanClass, fieldCallback);
+        FieldCallback fcb = new DataAccessFieldCallback(configurableListableBeanFactory, bean);
+        ReflectionUtils.doWithFields(managedBeanClass, fcb);
     }
 }

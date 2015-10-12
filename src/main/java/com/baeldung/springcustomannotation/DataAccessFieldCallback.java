@@ -16,34 +16,42 @@ import com.baeldung.springcustomannotation.annotation.DataAccess;
 
 public final class DataAccessFieldCallback implements FieldCallback {
 
-    private static final Logger logger = LoggerFactory.getLogger(DataAccessFieldCallback.class);
-    private static final int AUTOWIRE_MODE = AutowireCapableBeanFactory.AUTOWIRE_BY_NAME;
+    private static Logger logger = LoggerFactory.getLogger(DataAccessFieldCallback.class);
+    private static int AUTOWIRE_MODE = AutowireCapableBeanFactory.AUTOWIRE_BY_NAME;
+
+    private static String ERROR_ENTITY_VALUE_NOT_SAME = "@DataAccess(entity) "
+            + "value should have same type with injected generic type.";
+    private static String WARN_NON_GENERIC_VALUE = "@DataAccess annotation assigned "
+            + "to raw (non-generic) declaration. This will make your code less type-safe.";
+    private static String ERROR_CREATE_INSTANCE = "Cannot create instance of "
+            + "type '{}' or instance creation is failed because: {}";
 
     private ConfigurableListableBeanFactory configurableListableBeanFactory;
     private Object bean;
 
-    public DataAccessFieldCallback(final ConfigurableListableBeanFactory beanFactory, final Object bean) {
-        this.configurableListableBeanFactory = beanFactory;
+    public DataAccessFieldCallback(ConfigurableListableBeanFactory bf, Object bean) {
+        configurableListableBeanFactory = bf;
         this.bean = bean;
     }
 
     @Override
-    public void doWith(final Field field) throws IllegalArgumentException, IllegalAccessException {
+    public void doWith(Field field) 
+    throws IllegalArgumentException, IllegalAccessException {
         if (!field.isAnnotationPresent(DataAccess.class)) {
             return;
         }
         ReflectionUtils.makeAccessible(field);
-        final Type fieldGenericType = field.getGenericType();
-        final Class<?> injectableGenericClass = field.getType(); // In this example, get actual "GenericDAO' type.
-        final Class<?> entityClassValue = field.getDeclaredAnnotation(DataAccess.class).entity();
+        Type fieldGenericType = field.getGenericType();
+       // In this example, get actual "GenericDAO' type.
+        Class<?> generic = field.getType(); 
+        Class<?> classValue = field.getDeclaredAnnotation(DataAccess.class).entity();
 
-        if (genericTypeIsValid(entityClassValue, fieldGenericType)) {
-            final String beanName = entityClassValue.getSimpleName() + injectableGenericClass.getSimpleName();
-            final Object genericDAOInstance = getBeanInstance(beanName, injectableGenericClass, entityClassValue);
-            field.set(this.bean, genericDAOInstance);
+        if (genericTypeIsValid(classValue, fieldGenericType)) {
+            String beanName = classValue.getSimpleName() + generic.getSimpleName();
+            Object beanInstance = getBeanInstance(beanName, generic, classValue);
+            field.set(bean, beanInstance);
         } else {
-            final String msg = "@DataAccess(entity) value should have same type with injected generic type.";
-            throw new IllegalArgumentException(msg);
+            throw new IllegalArgumentException(ERROR_ENTITY_VALUE_NOT_SAME);
         }
     }
 
@@ -56,42 +64,42 @@ public final class DataAccessFieldCallback implements FieldCallback {
      * </pre>
      * then this is should be failed.
      */
-    public final boolean genericTypeIsValid(final Class<?> entityClassInDataAccessAnnotation, final Type fieldGenericType) {
-        if (fieldGenericType instanceof ParameterizedType) {
-            final ParameterizedType parameterizedType = (ParameterizedType) fieldGenericType;
-            final Type parameterizedFieldGenericType = parameterizedType.getActualTypeArguments()[0];
+    public boolean genericTypeIsValid(final Class<?> clazz, final Type field) {
+        if (field instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) field;
+            Type type = parameterizedType.getActualTypeArguments()[0];
 
-            return parameterizedFieldGenericType.equals(entityClassInDataAccessAnnotation);
+            return type.equals(clazz);
         } else {
-            logger.warn("@DataAccess annotation assigned to raw (non-generic) declaration. This will make your code less type-safe.");
+            logger.warn(WARN_NON_GENERIC_VALUE);
             return true;
         }
     }
 
 
 
-    public final Object getBeanInstance(final String beanName, final Class<?> injectableGenericClass, final Class<?> parameterizedClass) {
-        Object genericDAOInstance = null;
+    public final Object getBeanInstance(String beanName, Class<?> genericClass, Class<?> paramClass) {
+        Object daoInstance = null;
         if (!configurableListableBeanFactory.containsBean(beanName)) {
-            logger.info("Will creating new DataAccess bean with name '{}'.", beanName);
+            logger.info("Creating new DataAccess bean named '{}'.", beanName);
 
             Object toRegister = null;
             try {
-                final Constructor<?> constructor = injectableGenericClass.getConstructor(Class.class);
-                toRegister = constructor.newInstance(parameterizedClass);
+                Constructor<?> ctr = genericClass.getConstructor(Class.class);
+                toRegister = ctr.newInstance(paramClass);
             } catch (Exception e) {
-                logger.error("Cannot create instance of type '{}' or instance creation is failed because: {}", injectableGenericClass.getTypeName(), e);
+                logger.error(ERROR_CREATE_INSTANCE, genericClass.getTypeName(), e);
                 throw new RuntimeException(e);
             }
             
-            genericDAOInstance = configurableListableBeanFactory.initializeBean(toRegister, beanName);
-            configurableListableBeanFactory.autowireBeanProperties(genericDAOInstance, AUTOWIRE_MODE, true);
-            configurableListableBeanFactory.registerSingleton(beanName, genericDAOInstance);
+            daoInstance = configurableListableBeanFactory.initializeBean(toRegister, beanName);
+            configurableListableBeanFactory.autowireBeanProperties(daoInstance, AUTOWIRE_MODE, true);
+            configurableListableBeanFactory.registerSingleton(beanName, daoInstance);
             logger.info("Bean named '{}' created successfully.", beanName);
         } else {
-            genericDAOInstance = configurableListableBeanFactory.getBean(beanName);
-            logger.info("Bean named '{}' already exist and would be used as current bean reference.", beanName);
+            daoInstance = configurableListableBeanFactory.getBean(beanName);
+            logger.info("Bean named '{}' already exist used as current bean reference.", beanName);
         }
-        return genericDAOInstance;
+        return daoInstance;
     }
 }

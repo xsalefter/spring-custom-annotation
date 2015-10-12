@@ -34,13 +34,13 @@ public class DataAccessFieldCallbackTest {
     public ExpectedException ex = ExpectedException.none();
 
     @Test
-    public void whenObjectCreated_thenMakeSureObjectCreationIsSuccessful() {
+    public void whenObjectCreated_thenObjectCreationIsSuccessful() {
         DataAccessFieldCallback dataAccessFieldCallback = new DataAccessFieldCallback(configurableListableBeanFactory, this.beanWithGenericDAO);
         assertThat(dataAccessFieldCallback, is(notNullValue()));
     }
 
     @Test
-    public void whenMethodGenericTypeIsValidCalled_thenMakeSureReturnCorrectValue() 
+    public void whenMethodGenericTypeIsValidCalled_thenReturnCorrectValue() 
     throws NoSuchFieldException, SecurityException {
         DataAccessFieldCallback callback = new DataAccessFieldCallback(configurableListableBeanFactory, this.beanWithGenericDAO);
         Type fieldType = BeanWithGenericDAO.class.getDeclaredField("personGenericDAO").getGenericType();
@@ -49,7 +49,7 @@ public class DataAccessFieldCallbackTest {
     }
 
     @Test
-    public void whenMethodGetBeanInstanceCalled_thenMakeSureReturnCorrectInstance() {
+    public void whenMethodGetBeanInstanceCalled_thenReturnCorrectInstance() {
         DataAccessFieldCallback callback = new DataAccessFieldCallback(configurableListableBeanFactory, this.beanWithGenericDAO);
         Object result = callback.getBeanInstance("personGenericDAO", GenericDAO.class, Person.class);
         assertThat((result instanceof GenericDAO), is(true));
